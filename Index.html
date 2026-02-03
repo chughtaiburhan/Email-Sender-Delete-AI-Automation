@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><?= appName ?></title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      integrity="sha512-5sAR7xN1Nv6f8bNQDnZtR3d6G2sUEX8/1O6ZqNl6K1Y2iG+2sX5hM8H1zAwx7GzEL3t4a1t4iX0HxZ5Qd4y7Zw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        background: #f5f7fb;
+        color: #1b1e2b;
+      }
+      body {
+        margin: 0;
+        padding: 32px;
+      }
+      .container {
+        max-width: 920px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+      }
+      .title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .subtitle {
+        color: #6b7280;
+        margin-top: 4px;
+      }
+      .grid {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        font-size: 14px;
+      }
+      textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 12px 18px;
+        font-weight: 600;
+        background: #2563eb;
+        color: #fff;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: #0f172a;
+      }
+      .actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+      .card {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 20px;
+      }
+      .status {
+        margin-top: 12px;
+        font-size: 14px;
+        color: #0f766e;
+      }
+      .error {
+        color: #b91c1c;
+      }
+      .link {
+        color: #2563eb;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="title">
+          <i class="fa-solid fa-paper-plane fa-2x"></i>
+          <div>
+            <h1><?= appName ?></h1>
+            <div class="subtitle">DRY email automation, templates, and Gmail cleanup.</div>
+          </div>
+        </div>
+        <div>
+          <button class="secondary" onclick="runCleanup()">
+            <i class="fa-solid fa-trash"></i> Clean 30d Old Email
+          </button>
+        </div>
+      </header>
+
+      <section class="card">
+        <h2>1. Connect your Gmail profile</h2>
+        <div class="grid">
+          <div>
+            <label for="name">Name</label>
+            <input id="name" type="text" placeholder="Your name" />
+          </div>
+          <div>
+            <label for="email">Email</label>
+            <input id="email" type="email" placeholder="you@example.com" />
+          </div>
+          <div>
+            <label for="phone">Phone</label>
+            <input id="phone" type="tel" placeholder="+1 555 555 1234" />
+          </div>
+        </div>
+        <div class="actions">
+          <button onclick="saveProfile()">
+            <i class="fa-solid fa-user-check"></i> Save Profile & Sheet
+          </button>
+          <button class="secondary" onclick="loadSheetUrl()">
+            <i class="fa-solid fa-table"></i> Open Sheet
+          </button>
+        </div>
+        <div id="profileStatus" class="status"></div>
+      </section>
+
+      <section class="card">
+        <h2>2. Choose or create a template</h2>
+        <div class="grid">
+          <div>
+            <label for="templates">Google Docs Templates</label>
+            <select id="templates"></select>
+          </div>
+          <div>
+            <label for="subject">Email Subject (optional)</label>
+            <input id="subject" type="text" placeholder="Welcome ${name}" />
+          </div>
+          <div>
+            <label for="body">Email Body (optional)</label>
+            <textarea id="body" placeholder="Hi ${name}, thanks for joining ${company}..."></textarea>
+          </div>
+        </div>
+        <div class="actions">
+          <button onclick="loadTemplates()">
+            <i class="fa-solid fa-rotate"></i> Load Templates
+          </button>
+          <button class="secondary" onclick="saveTemplate()">
+            <i class="fa-solid fa-floppy-disk"></i> Save Selection
+          </button>
+          <button onclick="saveDraft()">
+            <i class="fa-solid fa-pen"></i> Save Draft Copy
+          </button>
+        </div>
+        <div id="templateStatus" class="status"></div>
+      </section>
+
+      <section class="card">
+        <h2>3. Send personalized emails</h2>
+        <p>
+          Add recipients in the spreadsheet. Use placeholders like <strong>${'{email}'}</strong>,
+          <strong>${'{name}'}</strong>, <strong>${'{about}'}</strong> to personalize.
+        </p>
+        <div class="actions">
+          <button onclick="sendEmails()">
+            <i class="fa-solid fa-envelope"></i> Send Emails
+          </button>
+        </div>
+        <div id="sendStatus" class="status"></div>
+      </section>
+    </div>
+
+    <script>
+      function setStatus(id, message, isError) {
+        const el = document.getElementById(id);
+        el.textContent = message;
+        el.className = isError ? 'status error' : 'status';
+      }
+
+      function saveProfile() {
+        const profile = {
+          name: document.getElementById('name').value,
+          email: document.getElementById('email').value,
+          phone: document.getElementById('phone').value,
+        };
+
+        google.script.run
+          .withSuccessHandler(result => {
+            setStatus('profileStatus', `Saved. Spreadsheet ID: ${result.spreadsheetId}`);
+          })
+          .withFailureHandler(err => {
+            setStatus('profileStatus', err.message, true);
+          })
+          .createUserProfile(profile);
+      }
+
+      function loadTemplates() {
+        google.script.run
+          .withSuccessHandler(templates => {
+            const select = document.getElementById('templates');
+            select.innerHTML = '';
+            templates.forEach(template => {
+              const option = document.createElement('option');
+              option.value = template.id;
+              option.textContent = template.name;
+              select.appendChild(option);
+            });
+            setStatus('templateStatus', `Loaded ${templates.length} templates.`);
+          })
+          .withFailureHandler(err => {
+            setStatus('templateStatus', err.message, true);
+          })
+          .listDocTemplates();
+      }
+
+      function saveTemplate() {
+        const templateId = document.getElementById('templates').value;
+        if (!templateId) {
+          setStatus('templateStatus', 'Select a template first.', true);
+          return;
+        }
+        google.script.run
+          .withSuccessHandler(() => {
+            setStatus('templateStatus', 'Template saved.');
+          })
+          .withFailureHandler(err => {
+            setStatus('templateStatus', err.message, true);
+          })
+          .saveSelectedTemplate(templateId);
+      }
+
+      function saveDraft() {
+        const subject = document.getElementById('subject').value;
+        const body = document.getElementById('body').value;
+        google.script.run
+          .withSuccessHandler(() => {
+            setStatus('templateStatus', 'Draft saved.');
+          })
+          .withFailureHandler(err => {
+            setStatus('templateStatus', err.message, true);
+          })
+          .saveDraftMessage(subject, body);
+      }
+
+      function sendEmails() {
+        google.script.run
+          .withSuccessHandler(result => {
+            setStatus('sendStatus', `Sent ${result.sent} emails.`);
+          })
+          .withFailureHandler(err => {
+            setStatus('sendStatus', err.message, true);
+          })
+          .sendPersonalizedEmails();
+      }
+
+      function runCleanup() {
+        google.script.run
+          .withSuccessHandler(result => {
+            setStatus('profileStatus', `Moved ${result.deleted} threads to trash.`);
+          })
+          .withFailureHandler(err => {
+            setStatus('profileStatus', err.message, true);
+          })
+          .deleteOldEmails();
+      }
+
+      function loadSheetUrl() {
+        google.script.run
+          .withSuccessHandler(url => {
+            if (!url) {
+              setStatus('profileStatus', 'No spreadsheet yet. Save your profile first.', true);
+              return;
+            }
+            window.open(url, '_blank');
+          })
+          .withFailureHandler(err => {
+            setStatus('profileStatus', err.message, true);
+          })
+          .getSpreadsheetUrl();
+      }
+    </script>
+  </body>
+</html>
